@@ -1,0 +1,18 @@
+# COLORS USED FOR PLOTTING
+
+# Color Mapping:
+#  '#73e2f7' ---> tiffany
+#  '#2CF4EE' ---> tiffany dark
+#  '#1eaaa6' ---> tiffany dark dark
+#  '#e1c4ff' ---> lilac
+#  '#c38ed5' ---> lilac dark
+#  '#886395' ---> lilac dark dark
+#  '#ed872d' ---> orange
+#  '#ff2800' ---> ferrari red
+#  '#0000e5' ---> blue
+
+COMPARISON_BARCHART:
+  - '#73e2f7'
+  - '#e1c4ff'
+
+COEFFICIENTS_BARCHART:
