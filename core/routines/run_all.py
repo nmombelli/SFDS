@@ -1,11 +1,9 @@
-import json
-import logging
 import os
+import shap
 
-from core.pipelines.output_preparation import join_output
 from core.routines.run_etl import run_etl
 from core.routines.run_model import run_model
-from core.viz.viz_bar import viz_logit_barchart
+from core.xai.xai_shap import xai_global_shap, xai_local_shap
 
 
 def execute_main(
@@ -13,19 +11,14 @@ def execute_main(
         split_strategy: str = None,
         n_splits: int = None,
         bln_scale: bool = True,
-        logit_type: str = None,
         random_state: int = None,
-) -> None:
+) -> tuple:
     """
     Loading data, preparing data and running the logistic model
     :param str_source: name of the source to consider. Allowed values are HR and CHURN.
     :param split_strategy: how to split the dataset in train and test set. Allowed values are None and OVERSAMPLING.
     :param n_splits: number of folds used for cross validation.
     :param bln_scale: if True, train and test set are scaled with normal scaling approach.
-    :param logit_type: how to make feature selection via logistic regression. Allowed values are:
-        None: no particular strategy applied; the model uses all the features received.
-        BACK: backward stepwise procedure applied to select only the relevant features.
-        FORWARD: forward stepwise procedure applied to select only the relevant features.
     :param random_state: seed to be set for reproducibility
     :return: dictionary with the model parameters and the test dataframe with its predictions.
     """
@@ -38,45 +31,52 @@ def execute_main(
     )
 
     # Creating a copy of the X sets before scaling (in the model below). We want to preserve the real values for plots.
-    X_test_real = X_test.copy()
+    # X_test_real = X_test.copy()
 
-    dct_out = run_model(
+    model, y_pred = run_model(
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        dct_cv=dct_cv,
+        n_splits=n_splits,
         bln_scale=bln_scale,
-        logit_type=logit_type,
         random_state=random_state,
     )
 
-    # Preparing data to help the user to visualize the ranking.
-    # Real values (not scaled) are kept.
-    dtf_rank = join_output(
-        X_test=X_test_real[dct_out['LST_COL_SEL']],
-        y_test=y_test,
-        y_pred=dct_out['Y_PRED'],
+    return model, X_test
+
+
+if __name__ == '__main__':
+    import yaml
+    from setting.logger import set_logger
+
+    print('I AM READY')
+
+    set_logger(level='INFO')
+
+    # configuring the path to store the outputs
+    with open(os.path.abspath('config/ingestion.yaml'), 'r') as f:
+        dct_ing = yaml.safe_load(f)['CHURN']
+    str_path_viz = dct_ing['PATH_MAIN'] + dct_ing['VIZ']['PATH_VIZ']
+    str_path_mod = dct_ing['PATH_MAIN'] + dct_ing['MODEL']['PATH_MODEL']
+    os.environ['PATH_OUT_VIZ'] = str_path_viz
+    os.environ['PATH_OUT_MOD'] = str_path_mod
+
+    os.makedirs(str_path_viz, exist_ok=True)
+    os.makedirs(str_path_mod, exist_ok=True)
+
+    model_out, X_test_out = execute_main(
+        str_source='CHURN',
+        n_splits=5,
+        split_strategy='OVERSAMPLING',
     )
+    print('I AM DONE')
 
-    # Preparing data for the plotting phase.
-    # In case of bln_scale=True, scaled values are used. Otherwise, the output is the same as dtf_rank
-    dtf_exp = join_output(
-        X_test=dct_out['X_TEST'][dct_out['LST_COL_SEL']],
-        y_test=y_test,
-        y_pred=dct_out['Y_PRED'],
-    )
-    dtf_exp.drop('TARGET_REAL', axis=1, inplace=True)
+    # Use the SHAP library to explain the model's predictions
+    explainer = shap.Explainer(model_out.predict, X_test_out)
+    shap_values = explainer(X_test_out)
 
-    viz_logit_barchart(dct_coef=dct_out['DCT_COEF'], figsize=(30, 12), maxnum_feat=30)
+    xai_global_shap(shap_values=shap_values, X_test=X_test_out)
+    xai_local_shap(shap_values=shap_values, idx=None)
 
-    # storing ranking data for user's explorations.
-    str_path_viz = os.environ['PATH_OUT_VIZ']
-    str_path_mod = os.environ['PATH_OUT_MOD']
-    dtf_rank.to_csv(f"{str_path_viz}RANKING_{str_source}.csv", sep=';', index=True)
-    logging.info(f"RANKING table dumped in {str_path_viz}")
-    with open(f"{str_path_mod}COEF_LOGIT_{str_source}.json", 'w') as f:
-        json.dump(dct_out['DCT_COEF'], f)
-    logging.info(f"COEF_LOGIT table dumped in {str_path_mod}")
-
-    return
+    print('OVER')

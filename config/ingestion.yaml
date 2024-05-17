@@ -10,7 +10,7 @@ HR:
     PATH_MODEL: MODEL/
 
 CHURN:
-  PATH_MAIN: C:/Users/XXXX/Desktop/RANKING/CHURN/
+  PATH_MAIN: C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/
   INGESTION:
     PATH_ING: DATA/
     FILENAME: credit_card_churn.csv

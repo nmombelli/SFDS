@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-# from core.data.etl_utils import category_corr
+from core.data.etl_utils import category_corr
 
 
 def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
@@ -60,8 +60,8 @@ def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
     lst_cat = dtf_work.select_dtypes(include='object').columns.tolist()
 
     # CORRELATION study
-    # dtf_cra = category_corr(dtf_in=dtf_work)
-    # dtf_corr = dtf_work[[c for c in dtf_work if c not in lst_cat]].corr()
+    dtf_cra = category_corr(dtf_in=dtf_work)
+    dtf_corr = dtf_work[[c for c in dtf_work if c not in lst_cat]].corr()
     # dropping columns too correlated
     dtf_work.drop(['CREDIT_LIMIT'], axis=1, inplace=True)
 
