@@ -2,15 +2,16 @@ import logging
 import yaml
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RandomizedSearchCV, cross_val_score
+from sklearn.model_selection import RandomizedSearchCV
 
 
-def run_random_forest(X_train, y_train, n_splits, random_state):
-
-    print(y_train.value_counts(normalize=True))
+def run_random_forest(X_train, y_train, random_state):
 
     with open('config/param_forest.yaml') as f:
-        dct_param = yaml.safe_load(f)['RANDOM_FOREST']
+        dct_param_rf = yaml.safe_load(f)['RANDOM_FOREST']
+
+    with open('config/param_cv.yaml') as f:
+        dct_param_cv = yaml.safe_load(f)
 
     # Create a random forest classifier
     rf = RandomForestClassifier(random_state=random_state)
@@ -18,13 +19,9 @@ def run_random_forest(X_train, y_train, n_splits, random_state):
     # Use random search to find the best hyperparameters
     rand_search = RandomizedSearchCV(
         rf,
-        param_distributions=dct_param,
-        n_iter=5,
-        cv=n_splits,
+        param_distributions=dct_param_rf,
         random_state=random_state,
-        scoring='roc_auc',
-        return_train_score=True,
-        verbose=0
+        **dct_param_cv
     )
 
     # Fit the random search object to the data
@@ -38,6 +35,6 @@ def run_random_forest(X_train, y_train, n_splits, random_state):
     model = rand_search.best_estimator_
 
     # Print the best hyperparameters
-    print('Best hyperparameters:', rand_search.best_params_)
+    logging.info(f'Best hyperparameters: {rand_search.best_params_}')
 
     return model
