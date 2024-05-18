@@ -1,6 +1,5 @@
-import os
-
 import numpy as np
+import os
 import shap
 
 from core.routines.run_etl import run_etl
@@ -46,6 +45,7 @@ def execute_main(
 
 if __name__ == '__main__':
 
+    import logging
     import yaml
     from setting.logger import set_logger
 
@@ -65,9 +65,12 @@ if __name__ == '__main__':
     model_out, X_test_out = execute_main(
         str_source='CHURN',
         split_strategy='OVERSAMPLING',
+        bln_scale=False,
     )
 
-    X_test_out = X_test_out.iloc[:100]
+    X_test_out = X_test_out.iloc[:10]
+
+    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
 
     # Use the SHAP library to explain the model's predictions
     explainer = shap.Explainer(model_out.predict, X_test_out)
@@ -75,7 +78,9 @@ if __name__ == '__main__':
 
     xai_global_shap(shap_values=shap_values, X_test=X_test_out, bln_save=True)
 
-    idx = np.random.random_integers(low=0, high=shap_values.shape[0])
-    xai_local_shap(shap_values=shap_values, idx=idx, bln_save=True)
+    i = np.random.randint(low=0, high=shap_values.shape[0])
+    xai_local_shap(shap_value_cust=shap_values[i], cust_id=X_test_out.index.tolist()[i], bln_save=True)
+    i = np.random.randint(low=0, high=shap_values.shape[0])
+    xai_local_shap(shap_value_cust=shap_values[i], cust_id=X_test_out.index.tolist()[i], bln_save=True)
 
-    print('I AM DONE')
+    logging.info('I AM DONE')
