@@ -48,11 +48,11 @@ async def api_model(
     os.makedirs(os.environ['PATH_OUT_VIZ'], exist_ok=True)
     os.makedirs(os.environ['PATH_OUT_MOD'], exist_ok=True)
 
-    execute_main(
+    model_params = execute_main(
         str_source='CHURN',
         split_strategy=split_strategy,
         bln_scale=bln_scale,
         random_state=random_state,
     )
 
-    return {"message": "Task completed"}
+    return {"message": "Task completed", "Best Model Params": model_params}

@@ -47,7 +47,7 @@ def run_model(
     test_set = pd.concat(
         [
             pd.Series(y_pred, index=X_test.index, name='MODEL_PRED'),
-            pd.Series(round(y_pred_proba[:, 1], 4), index=X_test.index, name='MODEL_PRED_PROBA'),
+            pd.Series(y_pred_proba[:, 1].round(4), index=X_test.index, name='MODEL_PRED_PROBA'),
             y_test,
             X_test,
         ],

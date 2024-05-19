@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import json
 
 from core.routines.run_etl import run_etl
 from core.routines.run_model import run_model
@@ -8,9 +9,9 @@ from core.routines.run_model import run_model
 def execute_main(
         str_source: str,
         split_strategy: str = None,
-        bln_scale: bool = True,
+        bln_scale: bool = False,
         random_state: int = None,
-) -> None:
+) -> dict:
     """
     Loading data, preparing data and running the classification model
     :param str_source: name of the source to consider. Allowed values are HR and CHURN.
@@ -35,20 +36,28 @@ def execute_main(
         random_state=random_state,
     )
 
+    model_params = model.get_params()
+
+    with open(os.environ['PATH_OUT_MOD'] + 'model_params.json', 'w') as fp:
+        json.dump(model_params, fp, indent=4)
+
     pd.to_pickle(model, os.environ['PATH_OUT_MOD'] + 'model.pickle')
     pd.to_pickle(X_train, os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
     pd.to_pickle(X_test, os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     test_set.to_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';', index=True)
 
-    return
+    return model_params
 
 
 if __name__ == '__main__':
 
     import logging
 
-    execute_main(str_source='CHURN')
-    logging.info('I AM DONE')
+    from setting.environment import set_env
+    from setting.logger import set_logger
 
-    # TODO: please fix CV numbers of iteration, fix the number of rows in shap dtf
-    # TODO: how about storing also the parameters of the model in json? so you can show them to the professor
+    set_env()
+    set_logger(level='INFO')
+
+    execute_main(str_source='CHURN', split_strategy='OVERSAMPLING')
+    logging.info('I AM DONE')

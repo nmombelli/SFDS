@@ -73,7 +73,7 @@ async def shap_global():
 
 @router.get(
     path='/local',
-    summary='',
+    summary=' ',
     description='',
     tags=['SHAP']
 )
@@ -98,10 +98,11 @@ async def shap_local(
         cust_pos = X_test.index.get_loc(cust_id)
     except Exception:
         dct_adv = {
+            'MESSAGE': f'Customer with ID={cust_id} not in test dataset. You can try one of the following ones:',
             'CHURNING': test_set.loc[test_set['MODEL_PRED'] == 1, 'CLIENTNUM'].tolist()[:5],
             'NOT CHURNING': test_set.loc[test_set['MODEL_PRED'] == 0, 'CLIENTNUM'].tolist()[:5],
         }
-        raise HTTPException(status_code=404, detail=f'{cust_id} not in test dataset. Try the following ones {dct_adv}')
+        raise HTTPException(status_code=404, detail=dct_adv)
 
     if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
         raise HTTPException(status_code=404, detail=f'Data Not Matching')
