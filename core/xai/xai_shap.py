@@ -4,7 +4,7 @@ import pandas as pd
 import shap
 
 
-def xai_global_shap(shap_values, X_test: pd.DataFrame, bln_save: True):
+def xai_shap_global(shap_values, X_test: pd.DataFrame, bln_save: True):
     """
     Create SHAP global plots and save them
     :param shap_values: shapley values needed for the plot
@@ -35,7 +35,7 @@ def xai_global_shap(shap_values, X_test: pd.DataFrame, bln_save: True):
     return
 
 
-def xai_local_shap(shap_value_cust, cust_id: int, bln_save: bool):
+def xai_shap_local(shap_value_cust, cust_id: int, bln_save: bool):
     """
     Create SHAP local plots and save them.
     :param shap_value_cust: shapley values needed for the plot

@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from setting.environment import set_env
 from setting.logger import set_logger
-from core.xai.xai_lime import xai_local_lime, xai_global_lime
+from core.xai.xai_lime import xai_lime_local, xai_lime_global
 
 router = APIRouter(default_response_class=JSONResponse)
 
@@ -71,7 +71,7 @@ async def lime_global():
     except Exception:
         raise HTTPException(status_code=404, detail=f'Files not found')
 
-    xai_global_lime(lime_explainer=lime_explainer, X_test=X_test, model=model)
+    xai_lime_global(lime_explainer=lime_explainer, X_test=X_test, model=model)
 
     return {"message": "Task completed"}
 
@@ -110,7 +110,7 @@ async def lime_local(
         }
         raise HTTPException(status_code=404, detail=dct_adv)
 
-    xai_local_lime(
+    xai_lime_local(
         lime_explainer=lime_explainer,
         data_row=X_test.values[cust_pos],
         model=model,

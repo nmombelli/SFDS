@@ -9,8 +9,8 @@ from fastapi import HTTPException
 # from fastapi import Query
 # from fastapi import status, BackgroundTasks
 
-from core.xai.xai_shap import xai_global_shap
-from core.xai.xai_shap import xai_local_shap
+from core.xai.xai_shap import xai_shap_global
+from core.xai.xai_shap import xai_shap_local
 from setting.environment import set_env
 from setting.logger import set_logger
 
@@ -66,7 +66,7 @@ async def shap_global():
     except Exception:
         raise HTTPException(status_code=404, detail=f'Files not found')
 
-    xai_global_shap(shap_values=shap_values, X_test=X_test, bln_save=True)
+    xai_shap_global(shap_values=shap_values, X_test=X_test, bln_save=True)
 
     return {"message": "Task completed"}
 
@@ -106,6 +106,6 @@ async def shap_local(
     if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
         raise HTTPException(status_code=404, detail=f'Data Not Matching')
 
-    xai_local_shap(shap_value_cust=shap_values[cust_pos], cust_id=cust_id, bln_save=True)
+    xai_shap_local(shap_value_cust=shap_values[cust_pos], cust_id=cust_id, bln_save=True)
 
     return {"message": "Task completed"}
