@@ -1,13 +1,13 @@
-HR:
-  PATH_MAIN: C:/Users/XXXX/Desktop/RANKING/HR/
-  INGESTION:
-    PATH_ING: DATA/
-    FILENAME: Placement_Data_Full_Class.csv
-    SEP: ','
-  VIZ:
-    PATH_VIZ: VIZ/
-  MODEL:
-    PATH_MODEL: MODEL/
+#HR:
+#  PATH_MAIN: C:/Users/XXXX/Desktop/RANKING/HR/
+#  INGESTION:
+#    PATH_ING: DATA/
+#    FILENAME: Placement_Data_Full_Class.csv
+#    SEP: ','
+#  VIZ:
+#    PATH_VIZ: VIZ/
+#  MODEL:
+#    PATH_MODEL: MODEL/
 
 CHURN:
   PATH_MAIN: C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/
@@ -15,7 +15,9 @@ CHURN:
     PATH_ING: DATA/
     FILENAME: credit_card_churn.csv
     SEP: ','
-  VIZ:
-    PATH_VIZ: VIZ/
   MODEL:
     PATH_MODEL: MODEL/
+  LIME:
+    PATH_LIME: LIME/
+  SHAP:
+    PATH_SHAP: SHAP/

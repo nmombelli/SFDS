@@ -41,7 +41,8 @@ async def shap_build():
     explainer = shap.Explainer(model.predict, X_test)
     shap_values = explainer(X_test)
 
-    pd.to_pickle(shap_values, os.environ['PATH_OUT_MOD'] + 'shap_values.pickle')
+    os.makedirs(os.environ['PATH_OUT_SHAP'], exist_ok=True)
+    pd.to_pickle(shap_values, os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
 
     return {"message": "Task completed"}
 
@@ -56,11 +57,10 @@ async def shap_global():
 
     set_env()
     set_logger(level='INFO')
-    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
 
     # load data
     try:
-        shap_values = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'shap_values.pickle')
+        shap_values = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     except Exception:
@@ -83,11 +83,10 @@ async def shap_local(
 
     set_env()
     set_logger(level='INFO')
-    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
 
     # load data
     try:
-        shap_values = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'shap_values.pickle')
+        shap_values = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
         test_set = pd.read_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';')

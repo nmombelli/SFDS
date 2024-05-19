@@ -19,14 +19,14 @@ def xai_global_shap(shap_values, X_test: pd.DataFrame, bln_save: True):
     shap.summary_plot(shap_values, X_test, feature_names=feature_names, plot_size=(15, 10))
 
     if bln_save:
-        plt.savefig(f'{os.environ['PATH_OUT_VIZ']}/SHAP/GLOBAL_BEESWARM.png')
+        plt.savefig(f'{os.environ['PATH_OUT_SHAP']}/GLOBAL_BEESWARM.png')
         plt.close()
 
     # Optional: Plot individual feature importance
     shap.summary_plot(shap_values, X_test, feature_names=feature_names, plot_type="bar", plot_size=(15, 10))
 
     if bln_save:
-        plt.savefig(f'{os.environ['PATH_OUT_VIZ']}/SHAP/GLOBAL_BARCHART.png')
+        plt.savefig(f'{os.environ['PATH_OUT_SHAP']}/GLOBAL_BARCHART.png')
         plt.close()
 
     # Optional: Dependency plot for a specific feature
@@ -55,7 +55,7 @@ def xai_local_shap(shap_value_cust, cust_id: int, bln_save: bool):
     fig.tight_layout()
 
     if bln_save:
-        plt.savefig(f'{os.environ['PATH_OUT_VIZ']}/SHAP/{cust_id}_BARCHART.png')
+        plt.savefig(f'{os.environ['PATH_OUT_SHAP']}/{cust_id}_BARCHART.png')
         plt.close()
 
     # WATERFALL
@@ -69,7 +69,7 @@ def xai_local_shap(shap_value_cust, cust_id: int, bln_save: bool):
     fig.tight_layout()
 
     if bln_save:
-        plt.savefig(f'{os.environ['PATH_OUT_VIZ']}/SHAP/{cust_id}_WATERFALL.png')
+        plt.savefig(f'{os.environ['PATH_OUT_SHAP']}/{cust_id}_WATERFALL.png')
         plt.close()
 
     return

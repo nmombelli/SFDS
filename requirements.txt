@@ -1,5 +1,6 @@
 # INSERT HERE THE PACKAGES NEEDED
 
+dill==0.3.8
 fastapi==0.110.2
 imblearn==0.0
 lime==0.2.0.1

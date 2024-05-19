@@ -1,20 +1,84 @@
-import lime
-import lime.lime_tabular
-import pandas as pd
+import os
+# import warnings
+
+from lime import submodular_pick
 
 
-model = pd.read_pickle('C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/MODEL/model.pickle')
-X_train = pd.read_pickle('C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/MODEL/X_train.pickle')
-X_test = pd.read_pickle('C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/MODEL/X_test.pickle')
+def xai_local_lime(lime_explainer, data_row, model, cust_id, **kwargs):
 
-# LIME has one explainer for all the models
-explainer = lime.lime_tabular.LimeTabularExplainer(
-    X_train.values,
-    feature_names=X_train.columns.values.tolist(),
-    class_names=['PINO'],
-    verbose=True,
-    mode='classification'
-)
+    exp = lime_explainer.explain_instance(
+        data_row=data_row,
+        predict_fn=model.predict_proba,
+        num_features=6,
+        **kwargs
+    )
 
-j = 5
-exp = explainer.explain_instance(X_test.values[j], model.predict, num_features=6)
+    exp.save_to_file(file_path=f"{os.environ['PATH_OUT_LIME']}/{cust_id}_LIME.html")
+
+    return
+
+
+def xai_global_lime(lime_explainer, X_test, model):
+
+    # SP-LIME returns explanations on a sample set to provide a non-redundant global decision boundary of the model
+    sp_obj = submodular_pick.SubmodularPick(
+        explainer=lime_explainer,
+        data=X_test.values,
+        predict_fn=model.predict_proba,
+        num_features=5,
+        num_exps_desired=10
+    )
+
+    # Open the file in write mode
+    with open(f"{os.environ['PATH_OUT_LIME']}/GLOBAL_LIME.html", "w", encoding="utf-8") as file:
+        # Write the initial part of the HTML content
+        file.write(
+            """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>CHURN: LIME GLOBAL xAI</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                }
+                .gallery {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                }
+                .gallery img {
+                    max-width: 100%;
+                    height: auto;
+                }
+            </style>
+            </head>
+            <body>
+            <h1>CHURN: LIME GLOBAL xAI</h1>
+            <div class="gallery">
+            """
+        )
+
+        # Iteratively append images
+        for exp in sp_obj.sp_explanations:
+            html_tmp = exp.as_html()
+            file.write(f'{html_tmp}')
+
+        # Write the closing part of the HTML content
+        file.write(
+            """
+            </div>
+            </body>
+            </html>
+            """
+        )
+
+    return
+
+
+if __name__ == '__main__':
+
+    print('I AM READY')
+    # xai_lime()

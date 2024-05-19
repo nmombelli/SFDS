@@ -22,8 +22,8 @@ router = APIRouter(default_response_class=JSONResponse)
                 '<ul>'
                 '<li><b>split_strategy:</b> whether to use oversampling or not in the train/test split. </li>'
                 '<li><b>bln_scale:</b> if True, data are scaled with normal scaling approach. </li>'
-                '`Output` </br>'
                 '</ul>'
+                '`Output` </br>'
                 '</br>'
                 'Return a .csv including, for each item of the test set, its features, the actual target and the '
                 'predicted target.',
@@ -45,7 +45,6 @@ async def api_model(
     set_env()
     set_logger(level='INFO')
 
-    os.makedirs(os.environ['PATH_OUT_VIZ'], exist_ok=True)
     os.makedirs(os.environ['PATH_OUT_MOD'], exist_ok=True)
 
     model_params = execute_main(

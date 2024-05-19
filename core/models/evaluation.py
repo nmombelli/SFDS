@@ -25,7 +25,7 @@ def evaluation(y_true: np.array, y_pred: np.array, y_pred_proba: np.array, tpe: 
         # Create the confusion matrix
         cm = confusion_matrix(y_true, y_pred)
         ConfusionMatrixDisplay(confusion_matrix=cm).plot()
-        plt.savefig(f'{os.environ['PATH_OUT_VIZ']}/CONFUSION_MATRIX_{tpe}.png')
+        plt.savefig(f'{os.environ['PATH_OUT_MOD']}/CONFUSION_MATRIX_{tpe}.png')
         plt.close()
 
     return
