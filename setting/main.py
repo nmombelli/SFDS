@@ -9,8 +9,8 @@ from fastapi.staticfiles import StaticFiles
 
 
 tags_metadata = [
-    {'name': 'Ranking', 'description': None},
-    {'name': 'Evaluative', 'description': None},
+    {'name': 'Model', 'description': None},
+    {'name': 'SHAP', 'description': None},
     {'name': 'Internal', 'description': 'Reserved APIs'}
 ]
 
@@ -18,7 +18,7 @@ app = FastAPI(
     title='SFDS ️',
     description='Welcome! </br>'
                 '</br>'
-                'Feel free!',
+                'Feel free to Try Me, Venoso!',
     openapi_tags=tags_metadata,
     version='1.0',
     docs_url=None,

@@ -1,10 +1,8 @@
-import numpy as np
+import pandas as pd
 import os
-import shap
 
 from core.routines.run_etl import run_etl
 from core.routines.run_model import run_model
-from core.xai.xai_shap import xai_global_shap, xai_local_shap
 
 
 def execute_main(
@@ -12,9 +10,9 @@ def execute_main(
         split_strategy: str = None,
         bln_scale: bool = True,
         random_state: int = None,
-) -> tuple:
+) -> None:
     """
-    Loading data, preparing data and running the logistic model
+    Loading data, preparing data and running the classification model
     :param str_source: name of the source to consider. Allowed values are HR and CHURN.
     :param split_strategy: how to split the dataset in train and test set. Allowed values are None and OVERSAMPLING.
     :param bln_scale: if True, train and test set are scaled with normal scaling approach.
@@ -40,47 +38,18 @@ def execute_main(
         random_state=random_state,
     )
 
-    return model, X_test
+    pd.to_pickle(model, os.environ['PATH_OUT_MOD'] + 'model.pickle')
+    pd.to_pickle(X_train, os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
+    pd.to_pickle(X_test, os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
+
+    return
 
 
 if __name__ == '__main__':
 
     import logging
-    import yaml
-    from setting.logger import set_logger
 
-    set_logger(level='INFO')
-
-    # configuring the path to store the outputs
-    with open(os.path.abspath('config/ingestion.yaml'), 'r') as f:
-        dct_ing = yaml.safe_load(f)['CHURN']
-    str_path_viz = dct_ing['PATH_MAIN'] + dct_ing['VIZ']['PATH_VIZ']
-    str_path_mod = dct_ing['PATH_MAIN'] + dct_ing['MODEL']['PATH_MODEL']
-    os.environ['PATH_OUT_VIZ'] = str_path_viz
-    os.environ['PATH_OUT_MOD'] = str_path_mod
-
-    os.makedirs(str_path_viz, exist_ok=True)
-    os.makedirs(str_path_mod, exist_ok=True)
-
-    model_out, X_test_out = execute_main(
-        str_source='CHURN',
-        split_strategy='OVERSAMPLING',
-        bln_scale=False,
-    )
-
-    X_test_out = X_test_out.iloc[:10]
-
-    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
-
-    # Use the SHAP library to explain the model's predictions
-    explainer = shap.Explainer(model_out.predict, X_test_out)
-    shap_values = explainer(X_test_out)
-
-    xai_global_shap(shap_values=shap_values, X_test=X_test_out, bln_save=True)
-
-    i = np.random.randint(low=0, high=shap_values.shape[0])
-    xai_local_shap(shap_value_cust=shap_values[i], cust_id=X_test_out.index.tolist()[i], bln_save=True)
-    i = np.random.randint(low=0, high=shap_values.shape[0])
-    xai_local_shap(shap_value_cust=shap_values[i], cust_id=X_test_out.index.tolist()[i], bln_save=True)
-
+    execute_main(str_source='CHURN')
     logging.info('I AM DONE')
+
+    # TODO: please fix CV numbers of iteration, fix the number of rows in shap dtf
