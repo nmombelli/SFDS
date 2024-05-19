@@ -44,4 +44,15 @@ def run_model(
     y_pred_proba = model.predict_proba(X_test)
     evaluation(y_test, y_pred, y_pred_proba, tpe='TEST', bln_save=True)
 
-    return model, y_pred
+    test_set = pd.concat(
+        [
+            pd.Series(y_pred, index=X_test.index, name='MODEL_PRED'),
+            pd.Series(round(y_pred_proba[:, 1], 4), index=X_test.index, name='MODEL_PRED_PROBA'),
+            y_test,
+            X_test,
+        ],
+        axis=1,
+        verify_integrity=True,
+    )
+
+    return model, test_set

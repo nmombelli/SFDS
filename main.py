@@ -9,8 +9,9 @@ from fastapi.staticfiles import StaticFiles
 
 
 tags_metadata = [
-    {'name': 'Model', 'description': None},
-    {'name': 'SHAP', 'description': None},
+    {'name': 'Model', 'description': 'Train the Churn Model'},
+    {'name': 'LIME', 'description': 'Get xAI with LIME'},
+    {'name': 'SHAP', 'description': 'Get xAI with SHAP'},
     {'name': 'Internal', 'description': 'Reserved APIs'}
 ]
 
@@ -18,7 +19,7 @@ app = FastAPI(
     title='SFDS ️',
     description='Welcome! </br>'
                 '</br>'
-                'Feel free to Try Me, Venoso!',
+                'Feel free!',
     openapi_tags=tags_metadata,
     version='1.0',
     docs_url=None,

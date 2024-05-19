@@ -1,7 +1,7 @@
+import numpy as np
 import pandas as pd
 import os
 import shap
-import yaml
 
 from fastapi.routing import APIRouter
 from fastapi.responses import JSONResponse
@@ -9,9 +9,10 @@ from fastapi import HTTPException
 # from fastapi import Query
 # from fastapi import status, BackgroundTasks
 
-from setting.logger import set_logger
 from core.xai.xai_shap import xai_global_shap
 from core.xai.xai_shap import xai_local_shap
+from setting.environment import set_env
+from setting.logger import set_logger
 
 
 router = APIRouter(default_response_class=JSONResponse)
@@ -25,16 +26,8 @@ router = APIRouter(default_response_class=JSONResponse)
 )
 async def shap_build():
 
+    set_env()
     set_logger(level='INFO')
-
-    # configuring the path to store the outputs
-    with open(os.path.abspath('config/ingestion.yaml'), 'r') as f:
-        dct_ing = yaml.safe_load(f)['CHURN']
-    str_path_viz = dct_ing['PATH_MAIN'] + dct_ing['VIZ']['PATH_VIZ']
-    str_path_mod = dct_ing['PATH_MAIN'] + dct_ing['MODEL']['PATH_MODEL']
-
-    os.environ['PATH_OUT_VIZ'] = str_path_viz
-    os.environ['PATH_OUT_MOD'] = str_path_mod
 
     # load data
     try:
@@ -42,9 +35,7 @@ async def shap_build():
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     except Exception:
-        raise HTTPException(status_code=404, detail=f'Files not found at {str_path_viz}')
-
-    # X_test = X_test.iloc[:10]
+        raise HTTPException(status_code=404, detail=f'Files not found')
 
     # Use the SHAP library to explain the model's predictions
     explainer = shap.Explainer(model.predict, X_test)
@@ -63,16 +54,9 @@ async def shap_build():
 )
 async def shap_global():
 
+    set_env()
     set_logger(level='INFO')
-
-    # configuring the path to store the outputs
-    with open(os.path.abspath('config/ingestion.yaml'), 'r') as f:
-        dct_ing = yaml.safe_load(f)['CHURN']
-    str_path_viz = dct_ing['PATH_MAIN'] + dct_ing['VIZ']['PATH_VIZ']
-    str_path_mod = dct_ing['PATH_MAIN'] + dct_ing['MODEL']['PATH_MODEL']
-
-    os.environ['PATH_OUT_VIZ'] = str_path_viz
-    os.environ['PATH_OUT_MOD'] = str_path_mod
+    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
 
     # load data
     try:
@@ -80,9 +64,8 @@ async def shap_global():
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     except Exception:
-        raise HTTPException(status_code=404, detail=f'Files not found at {str_path_viz}')
+        raise HTTPException(status_code=404, detail=f'Files not found')
 
-    os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
     xai_global_shap(shap_values=shap_values, X_test=X_test, bln_save=True)
 
     return {"message": "Task completed"}
@@ -90,25 +73,16 @@ async def shap_global():
 
 @router.get(
     path='/local',
-    summary=' ',
+    summary='',
     description='',
     tags=['SHAP']
 )
 async def shap_local(
-        row: str
+        cust_id: int
 ):
 
+    set_env()
     set_logger(level='INFO')
-
-    # configuring the path to store the outputs
-    with open(os.path.abspath('config/ingestion.yaml'), 'r') as f:
-        dct_ing = yaml.safe_load(f)['CHURN']
-    str_path_viz = dct_ing['PATH_MAIN'] + dct_ing['VIZ']['PATH_VIZ']
-    str_path_mod = dct_ing['PATH_MAIN'] + dct_ing['MODEL']['PATH_MODEL']
-
-    os.environ['PATH_OUT_VIZ'] = str_path_viz
-    os.environ['PATH_OUT_MOD'] = str_path_mod
-
     os.makedirs(f'{os.environ['PATH_OUT_VIZ']}/SHAP', exist_ok=True)
 
     # load data
@@ -116,9 +90,22 @@ async def shap_local(
         shap_values = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'shap_values.pickle')
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
+        test_set = pd.read_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';')
     except Exception:
-        raise HTTPException(status_code=404, detail=f'Files not found at {str_path_viz}')
+        raise HTTPException(status_code=404, detail=f'Files not found')
 
-    xai_local_shap(shap_value_cust=shap_values[row], cust_id=X_test.index.tolist()[row], bln_save=True)
+    try:
+        cust_pos = X_test.index.get_loc(cust_id)
+    except Exception:
+        dct_adv = {
+            'CHURNING': test_set.loc[test_set['MODEL_PRED'] == 1, 'CLIENTNUM'].tolist()[:5],
+            'NOT CHURNING': test_set.loc[test_set['MODEL_PRED'] == 0, 'CLIENTNUM'].tolist()[:5],
+        }
+        raise HTTPException(status_code=404, detail=f'{cust_id} not in test dataset. Try the following ones {dct_adv}')
+
+    if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
+        raise HTTPException(status_code=404, detail=f'Data Not Matching')
+
+    xai_local_shap(shap_value_cust=shap_values[cust_pos], cust_id=cust_id, bln_save=True)
 
     return {"message": "Task completed"}

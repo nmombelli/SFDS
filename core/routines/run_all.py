@@ -27,10 +27,7 @@ def execute_main(
         random_state=random_state
     )
 
-    # Creating a copy of the X sets before scaling (in the model below). We want to preserve the real values for plots.
-    # X_test_real = X_test.copy()
-
-    model, y_pred = run_model(
+    model, test_set = run_model(
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
@@ -41,6 +38,7 @@ def execute_main(
     pd.to_pickle(model, os.environ['PATH_OUT_MOD'] + 'model.pickle')
     pd.to_pickle(X_train, os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
     pd.to_pickle(X_test, os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
+    test_set.to_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';', index=True)
 
     return
 
@@ -53,3 +51,4 @@ if __name__ == '__main__':
     logging.info('I AM DONE')
 
     # TODO: please fix CV numbers of iteration, fix the number of rows in shap dtf
+    # TODO: how about storing also the parameters of the model in json? so you can show them to the professor
