@@ -26,6 +26,7 @@ async def safe_global():
 
     set_env()
     set_logger(level='INFO')
+    os.makedirs(os.environ['PATH_OUT_SAFE'], exist_ok=True)
 
     # load data
     try:
@@ -62,6 +63,7 @@ async def safe_local(
 
     set_env()
     set_logger(level='INFO')
+    os.makedirs(os.environ['PATH_OUT_SAFE'], exist_ok=True)
 
     # load data
     try:

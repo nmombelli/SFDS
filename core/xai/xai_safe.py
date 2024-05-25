@@ -1,7 +1,13 @@
+import matplotlib
+import matplotlib.pyplot as plt
+import os
 import pandas as pd
 
 from safeaipackage.check_explainability import Explainability
 from sklearn.ensemble import RandomForestClassifier
+
+# This option allows to correctly store in filesystem, otherwise the images stored are empty.
+matplotlib.use('Agg')
 
 
 def xai_safe_global(X_train, X_test, y_train, y_test, model_params):
@@ -26,7 +32,15 @@ def xai_safe_global(X_train, X_test, y_train, y_test, model_params):
 
     # The warning raised in here is due to what happens in the function.
     # They use a reset_index(drop=True) on the train part. Bad move. You cannot fix this outside the package
-    xe.rge()
+    rge_df = xe.rge()
+    plt.figure()
+    plt.barh(rge_df.index, rge_df["RGE"], color='orange')
+    plt.xlabel("RGE (Feature Importance)")
+    plt.ylabel("Feature")
+    # plt.title("RGE")
+    plt.tight_layout()
+    plt.savefig(f'{os.environ['PATH_OUT_SAFE']}/GLOBAL.png', )
+    plt.close()
 
     return
 
@@ -58,7 +72,14 @@ def xai_safe_local(X_train, X_test, y_train, y_test, model_params, cust_id):
 
     # The warning raised in here is due to what happens in the function.
     # They use a reset_index(drop=True) on the train part. Bad move. You cannot fix this outside the package
-    xe.rge()
+    rge_df = xe.rge()
+    plt.figure(figsize=(10, 6))
+    plt.barh(rge_df.index, rge_df["RGE"])
+    plt.xlabel("RGE (Feature Importance)")
+    plt.ylabel("Feature")
+    plt.title("RGE")
+    plt.savefig(f'{os.environ['PATH_OUT_SAFE']}/LOCAL_{cust_id}.png')
+    plt.close()
 
     return
 

@@ -32,13 +32,13 @@ async def shap_build():
     # load data
     try:
         model = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'model.pickle')
-        # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
+        X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     except Exception:
         raise HTTPException(status_code=404, detail=f'Files not found')
 
     # Use the SHAP library to explain the model's predictions
-    explainer = shap.Explainer(model.predict, X_test)
+    explainer = shap.Explainer(model.predict, X_train)
     shap_values = explainer(X_test)
 
     os.makedirs(os.environ['PATH_OUT_SHAP'], exist_ok=True)
@@ -66,7 +66,7 @@ async def shap_global():
     except Exception:
         raise HTTPException(status_code=404, detail=f'Files not found')
 
-    xai_shap_global(shap_values=shap_values, X_test=X_test, bln_save=True)
+    xai_shap_global(shap_values=shap_values, X_test=X_test)
 
     return {"message": "Task completed"}
 
@@ -106,6 +106,6 @@ async def shap_local(
     if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
         raise HTTPException(status_code=404, detail=f'Data Not Matching')
 
-    xai_shap_local(shap_value_cust=shap_values[cust_pos], cust_id=cust_id, bln_save=True)
+    xai_shap_local(shap_value_cust=shap_values[cust_pos], cust_id=cust_id)
 
     return {"message": "Task completed"}
