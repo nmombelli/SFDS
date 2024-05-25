@@ -1,4 +1,4 @@
-n_iter: 30
+n_iter: 70
 cv: 5
 scoring: 'roc_auc'
 return_train_score: True

@@ -2,6 +2,7 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import json
 
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -15,13 +16,22 @@ def evaluation(y_true: np.array, y_pred: np.array, y_pred_proba: np.array, tpe: 
     recall_test = round(recall_score(y_true, y_pred), 4)
     f1_score_test = round(f1_score(y_true, y_pred), 4)
 
-    logging.info(f'{tpe} set: AUC: {auc_test}')
-    logging.info(f'{tpe} set: ACCURACY: {accuracy_test}')
-    logging.info(f'{tpe} set: PRECISION: {precision_test}')
-    logging.info(f'{tpe} set: RECALL: {recall_test}')
-    logging.info(f'{tpe} set: F1 SCORE: {f1_score_test}')
+    dct_eval = {
+        'AUC': auc_test,
+        'ACCURACY': accuracy_test,
+        'PRECISION': precision_test,
+        'RECALL': recall_test,
+        'F1-SCORE': f1_score_test,
+    }
+
+    logging.info(f'{tpe} set: {dct_eval}')
 
     if bln_save:
+
+        # save metrics
+        with open(os.environ['PATH_OUT_MOD'] + f'evaluation_{tpe}.json', 'w') as fp:
+            json.dump(dct_eval, fp, indent=4)
+
         # Create the confusion matrix
         cm = confusion_matrix(y_true, y_pred)
         ConfusionMatrixDisplay(confusion_matrix=cm).plot()
