@@ -44,6 +44,8 @@ def execute_main(
     pd.to_pickle(model, os.environ['PATH_OUT_MOD'] + 'model.pickle')
     pd.to_pickle(X_train, os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
     pd.to_pickle(X_test, os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
+    pd.to_pickle(y_train, os.environ['PATH_OUT_MOD'] + 'y_train.pickle')
+    pd.to_pickle(y_test, os.environ['PATH_OUT_MOD'] + 'y_test.pickle')
     test_set.to_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';', index=True)
 
     return model_params

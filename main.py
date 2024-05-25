@@ -12,6 +12,7 @@ tags_metadata = [
     {'name': 'Model', 'description': 'Train the Churn Model'},
     {'name': 'LIME', 'description': 'Get xAI with LIME'},
     {'name': 'SHAP', 'description': 'Get xAI with SHAP'},
+    {'name': 'SAFE', 'description': 'Get xAI with SAFE'},
     {'name': 'Internal', 'description': 'Reserved APIs'}
 ]
 
