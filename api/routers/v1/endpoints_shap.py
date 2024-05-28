@@ -38,11 +38,25 @@ async def shap_build():
         raise HTTPException(status_code=404, detail=f'Files not found')
 
     # Use the SHAP library to explain the model's predictions
-    explainer = shap.Explainer(model.predict, X_train)
+    # WARNING: you had to remove the mask from the explainer below, otherwise create check_additivity issue.
+    # You have already verified that it is not due to cv-phase (tested that no re-train is needed) nor dumping via
+    # pickle (no problems of approximation). Need still to understand why.
+    # This rounding problem does not happens when you use model.predict but the plot will refer to 0/1 target, not prob.
+    # TODO: why is the baseline values 0.5?? this impacts the model
+    explainer = shap.TreeExplainer(model)
     shap_values = explainer(X_test)
+    # TODO: this explanation is useless. you can do the same starting from shap_values found above
+    explanation = shap.Explanation(
+        shap_values.values[:, :, 1],
+        shap_values.base_values[:, 1],
+        data=X_test.values,
+        feature_names=X_test.columns
+    )
 
     os.makedirs(os.environ['PATH_OUT_SHAP'], exist_ok=True)
+    pd.to_pickle(explainer, os.environ['PATH_OUT_SHAP'] + 'explainer.pickle')
     pd.to_pickle(shap_values, os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
+    pd.to_pickle(explanation, os.environ['PATH_OUT_SHAP'] + 'explanation.pickle')
 
     return {"message": "Task completed"}
 
@@ -87,6 +101,7 @@ async def shap_local(
     # load data
     try:
         shap_values = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
+        explanation = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'explanation.pickle')
         # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
         test_set = pd.read_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';')
@@ -106,6 +121,9 @@ async def shap_local(
     if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
         raise HTTPException(status_code=404, detail=f'Data Not Matching')
 
-    xai_shap_local(shap_value_cust=shap_values[cust_pos], cust_id=cust_id)
+    # TODO: please replace explanation with shap_values retrieved from build. See TODO above.
+    # TODO: why the base value is 0.5?? It should be the average! (is maybe related to the fact that no mask is passed
+    #   when building the explainer?
+    xai_shap_local(shap_value_cust=explanation[cust_pos], cust_id=cust_id)
 
     return {"message": "Task completed"}

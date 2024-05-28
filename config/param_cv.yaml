@@ -1,5 +1,5 @@
-n_iter: 70
+n_iter: 3
 cv: 5
-scoring: 'roc_auc'
+scoring: 'f1'
 return_train_score: True
 verbose: 0
