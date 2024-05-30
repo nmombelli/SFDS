@@ -38,15 +38,16 @@ async def shap_build():
         raise HTTPException(status_code=404, detail=f'Files not found')
 
     # Use the SHAP library to explain the model's predictions
-    # WARNING: you had to remove the mask from the explainer below, otherwise create check_additivity issue.
+    # WARNING: check_additivity
+    # - No problem using model_output = 'probability'
+    # - Using model_output = 'raw', you had to remove the mask from the explainer to avoid the issue.
     # You have already verified that it is not due to cv-phase (tested that no re-train is needed) nor dumping via
     # pickle (no problems of approximation). Need still to understand why.
-    # This rounding problem does not happens when you use model.predict but the plot will refer to 0/1 target, not prob.
-    # TODO: why is the baseline values 0.5?? this impacts the model
-    explainer = shap.TreeExplainer(model)
+    # This rounding problem does not happen when you use model.predict but the plot will refer to 0/1 target, not prob.
+
+    explainer = shap.TreeExplainer(model, X_train, model_output='probability')
     shap_values = explainer(X_test)
-    # TODO: this explanation is useless. you can do the same starting from shap_values found above
-    explanation = shap.Explanation(
+    explanations = shap.Explanation(
         shap_values.values[:, :, 1],
         shap_values.base_values[:, 1],
         data=X_test.values,
@@ -56,7 +57,7 @@ async def shap_build():
     os.makedirs(os.environ['PATH_OUT_SHAP'], exist_ok=True)
     pd.to_pickle(explainer, os.environ['PATH_OUT_SHAP'] + 'explainer.pickle')
     pd.to_pickle(shap_values, os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
-    pd.to_pickle(explanation, os.environ['PATH_OUT_SHAP'] + 'explanation.pickle')
+    pd.to_pickle(explanations, os.environ['PATH_OUT_SHAP'] + 'explanations.pickle')
 
     return {"message": "Task completed"}
 
@@ -74,13 +75,12 @@ async def shap_global():
 
     # load data
     try:
-        shap_values = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
-        # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
+        explanations = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'explanations.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
     except Exception:
         raise HTTPException(status_code=404, detail=f'Files not found')
 
-    xai_shap_global(shap_values=shap_values, X_test=X_test)
+    xai_shap_global(shap_values=explanations, X_test=X_test)
 
     return {"message": "Task completed"}
 
@@ -100,9 +100,7 @@ async def shap_local(
 
     # load data
     try:
-        shap_values = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'shap_values.pickle')
-        explanation = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'explanation.pickle')
-        # X_train = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_train.pickle')
+        explanations = pd.read_pickle(os.environ['PATH_OUT_SHAP'] + 'explanations.pickle')
         X_test = pd.read_pickle(os.environ['PATH_OUT_MOD'] + 'X_test.pickle')
         test_set = pd.read_csv(os.environ['PATH_OUT_MOD'] + 'test_set.csv', sep=';')
     except Exception:
@@ -118,12 +116,9 @@ async def shap_local(
         }
         raise HTTPException(status_code=404, detail=dct_adv)
 
-    if not np.array_equal(np.array(X_test.loc[cust_id]), shap_values[cust_pos].data):
+    if not np.array_equal(np.array(X_test.loc[cust_id]), explanations[cust_pos].data):
         raise HTTPException(status_code=404, detail=f'Data Not Matching')
 
-    # TODO: please replace explanation with shap_values retrieved from build. See TODO above.
-    # TODO: why the base value is 0.5?? It should be the average! (is maybe related to the fact that no mask is passed
-    #   when building the explainer?
-    xai_shap_local(shap_value_cust=explanation[cust_pos], cust_id=cust_id)
+    xai_shap_local(shap_value_cust=explanations[cust_pos], cust_id=cust_id)
 
     return {"message": "Task completed"}

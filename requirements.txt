@@ -16,3 +16,4 @@ shap==0.45.1
 starlette==0.37.2
 statsmodels==0.14
 uvicorn==0.29.0
+# xgboost==2.0.3
