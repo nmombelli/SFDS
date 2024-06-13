@@ -18,9 +18,9 @@ tags_metadata = [
 
 app = FastAPI(
     title='SFDS ️',
-    description='Welcome! </br>'
+    description='Welcome, Dear Guest! </br>'
                 '</br>'
-                'Feel free!',
+                'Feel free to use this magic interface to run xAI explorations! 🧙🏻‍♂️',
     openapi_tags=tags_metadata,
     version='1.0',
     docs_url=None,
