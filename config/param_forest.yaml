@@ -1,26 +1,24 @@
 RANDOM_FOREST:
   n_estimators:
+    - 20
+    - 30
+    - 40
     - 50
-    - 75
-    - 100
-    - 125
-    - 150
   criterion:
     - gini
     - entropy
   max_depth:
+    - 4
+    - 5
     - 6
-    - 8
-    - 10
-    - 12
   min_samples_leaf:
     - 10
     - 15
     - 20
   max_features:
+    - 5
+    - 8
     - 10
-    - 20
-    - 30
-    - 'sqrt'
   class_weight:
     - 'balanced'
+    - 'balanced_subsample'

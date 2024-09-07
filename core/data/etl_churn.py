@@ -1,8 +1,11 @@
 import logging
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
-from core.data.etl_utils import category_corr
+from matplotlib import pyplot as plt
+
+# from core.data.etl_utils import category_corr
 
 
 def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
@@ -28,7 +31,7 @@ def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
     # GENDER: we want to avoid unfair scenarios
     # NAIVE_BAYES_CLASSIFIER ... : columns dropped as suggested by the author of the dataset.
     lst_drop = [
-        'GENDER',
+        # 'GENDER',
         'NAIVE_BAYES_CLASSIFIER_ATTRITION_FLAG_CARD_CATEGORY_CONTACTS_COUNT_12_MON_DEPENDENT_COUNT_EDUCATION_LEVEL_MONTHS_INACTIVE_12_MON_1',
         'NAIVE_BAYES_CLASSIFIER_ATTRITION_FLAG_CARD_CATEGORY_CONTACTS_COUNT_12_MON_DEPENDENT_COUNT_EDUCATION_LEVEL_MONTHS_INACTIVE_12_MON_2',
     ]
@@ -61,9 +64,16 @@ def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
 
     # CORRELATION study
     # dtf_cra = category_corr(dtf_in=dtf_work)
-    # dtf_corr = dtf_work[[c for c in dtf_work if c not in lst_cat]].corr()
+    dtf_corr = dtf_work[[c for c in dtf_work if (c not in lst_cat) and (c != 'TARGET')]].corr()
+    fig, ax = plt.subplots(figsize=(20, 8))
+    sns.heatmap(dtf_corr, annot=True)
+    plt.xticks(rotation=40, ha='right', rotation_mode='anchor')
+    fig.subplots_adjust(bottom=0.2, right=1)
+    plt.savefig('C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/DATA/CORRELATION_MATRIX.png')
+    plt.close()
+
     # dropping columns too correlated
-    dtf_work.drop(['CREDIT_LIMIT'], axis=1, inplace=True)
+    dtf_work.drop(['AVG_OPEN_TO_BUY', 'TOTAL_TRANS_CT', 'CUSTOMER_AGE'], axis=1, inplace=True)
 
     for c in lst_cat:
         dtf_work[c] = dtf_work[c].str.strip('.')
