@@ -69,6 +69,7 @@ def data_preparation_churn(dtf_load: pd.DataFrame) -> pd.DataFrame:
     sns.heatmap(dtf_corr, annot=True)
     plt.xticks(rotation=40, ha='right', rotation_mode='anchor')
     fig.subplots_adjust(bottom=0.2, right=1)
+    # TODO: fix this path
     plt.savefig('C:/Users/NMOMBELLI/Desktop/SFDS/CHURN/DATA/CORRELATION_MATRIX.png')
     plt.close()
 

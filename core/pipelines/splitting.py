@@ -35,7 +35,7 @@ def split_data(
     logging.info(f"SPLITTING_DATA - TARGET TEST:  {round(y_test.value_counts(normalize=True)[1], 6)} %")
 
     if split_strategy == 'OVERSAMPLING':
-        sm = SMOTE(sampling_strategy=0.3, random_state=random_state)
+        sm = SMOTE(sampling_strategy=0.25, random_state=random_state)
         X_train, y_train = sm.fit_resample(X_train, y_train)
         logging.info(f"SPLITTING_DATA - TARGET TRAIN SMOTE: {round(y_train.value_counts(normalize=True)[1], 6)} %")
         # the shape of the train changes, the shape of the test not.
