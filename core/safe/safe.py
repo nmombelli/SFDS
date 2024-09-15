@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import os
 
@@ -55,10 +57,19 @@ plt.close()
 
 # STATISTICAL TESTS
 
-safe_acc.rga_statistic_test(problemtype='classification')
-safe_rob.rgr_statistic_test(problemtype='classification')
-safe_fair.rgf_statistic_test(protectedvariable=['GENDER_M'])
+pvalues = dict()
+logging.info('RGA Started')
+pvalues['RGA'] = safe_acc.rga_statistic_test(problemtype='classification')
+logging.info('RGR Started')
+pvalues['RGR'] = safe_rob.rgr_statistic_test(problemtype='classification')
+logging.info('RGF Started')
+pvalues['RGF'] = safe_fair.rgf_statistic_test(protectedvariable='GENDER_M')
 
-dct_exp = {}
+pvalues['RGE'] = {}
 for column in X_train.columns.tolist():
-    dct_exp[column] = safe_xai.rge_statistic_test(variable=column)
+    logging.info(f'RGE Started column {column}')
+    pvalues['RGE'][column] = safe_xai.rge_statistic_test(variable=column)
+
+pvalues_rge = pd.DataFrame(pvalues['RGE'].items())
+
+# pd.to_pickle(pvalues, 'C:/Users/NMOMBELLI/Desktop/SFDS/RUN_GOOD_MLDM/SAFE/pvalues.pickle')
